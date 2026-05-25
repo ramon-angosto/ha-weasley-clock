@@ -11,7 +11,7 @@ Before configuring the integration, you need to create your custom Clock Face an
     * This project includes design templates for the Clock Face and the Hands in the `TemplateFiles` folder.
     * You can edit these using **Affinity Photo**.
     * **Customizing texts:** Open the image you want to modify, select the text component, and type the desired name (for the Clock Face locations or the family members).
-    * **Saving components:** When saving from the main template file that contains all components, ensure you export *only* the specific component you need (e.g., a single hand), while strictly keeping the original canvas size.
+    * **Saving components:** When saving from the main template file that contains all components, ensure you export *only* the specific component you need (e.g., a single hand), while strictly keeping the original canvas size. **For the clock hands, it is crucial to save them as `.png` with a transparent background.**
     * Customize the length or color of the Hands for each family member as needed.
 
 2.  **Export Images:**
