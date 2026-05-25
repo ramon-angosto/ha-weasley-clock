@@ -7,9 +7,16 @@ A complete solution for a Harry Potter style Location Clock in Home Assistant. I
 ## 🎨 Asset Preparation (Graphics)
 Before configuring the integration, you need to create your custom Clock Face and Hands.
 
+**Clock Face Example:**  
+![Clock Face Example](docs/weasley_clockface_example.png)
+
+**Clock Hand Example:**  
+![Clock Hand Example](docs/weasley_clockhand_example.png)
+
 1.  **Edit the Design Files:**
     * This project includes design templates for the Clock Face and the Hands in the `TemplateFiles` folder.
     * You can edit these using **Affinity Photo**.
+    * **Important Font Note:** If you want your text to match the original templates, please install the [Big Caslon Medium font](https://fontsgeek.com/fonts/big-caslon-medium?ref=readme) before editing.
     * **Customizing texts:** Open the image you want to modify, select the text component, and type the desired name (for the Clock Face locations or the family members).
     * **Saving components:** When saving from the main template file that contains all components, ensure you export *only* the specific component you need (e.g., a single hand), while strictly keeping the original canvas size. **For the clock hands, it is crucial to save them as `.png` with a transparent background.**
     * Customize the length or color of the Hands for each family member as needed.
