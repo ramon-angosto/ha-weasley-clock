@@ -9,7 +9,7 @@ Before configuring the integration, you need to create your custom Clock Face an
 
 1.  **Edit the Design Files:**
     * This project includes design templates for the Clock Face and the Hands in the `TemplateFiles` folder.
-    * You can edit these using **Affinity Photo** (recommended template), **Photoshop**, or the free web-based tool **[Photopea](https://www.photopea.com/)**.
+    * You can edit these using **Affinity Photo**.
     * **Customizing texts:** Open the image you want to modify, select the text component, and type the desired name (for the Clock Face locations or the family members).
     * **Saving components:** When saving from the main template file that contains all components, ensure you export *only* the specific component you need (e.g., a single hand), while strictly keeping the original canvas size.
     * Customize the length or color of the Hands for each family member as needed.
@@ -33,7 +33,7 @@ Before configuring the integration, you need to create your custom Clock Face an
 1.  Go to **Settings > Devices & Services > Add Integration**.
 2.  Search for **Weasley Clock**.
 3.  **Step 1:** You will be prompted to name your 13 clock positions.
-    * *Important:* These names must match the text you wrote on your `.psd` Clock Face image.
+    * *Important:* These names must match the text you wrote on your Affinity Clock Face template.
     * *Order:* The order corresponds to the clock hands moving clockwise from the top (12:00 position is usually "Home").
 
 ### 2. Adding a Person (The Hand)
