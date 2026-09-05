@@ -4,6 +4,7 @@ from __future__ import annotations
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.helpers import selector
+from homeassistant.helpers.template import Template
 import homeassistant.helpers.config_validation as cv
 
 from .const import DOMAIN
@@ -58,7 +59,7 @@ class WeasleyClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             # Validate the Jinja template
             try:
-                self.hass.helpers.template.Template(user_input["template"], self.hass).ensure_valid()
+                Template(user_input["template"], self.hass).ensure_valid()
                 return self.async_create_entry(title=user_input["name"], data=user_input)
             except Exception:
                 errors["template"] = "invalid_template"
