@@ -45,8 +45,8 @@ Before configuring the integration, you need to create your custom Clock Face an
 
 ### 2. Adding a Person (The Hand)
 To add a person, go to **Settings > Devices > Add Integration > Weasley Clock** again.
-1.  **Name:** Enter the person's name (e.g., `Ramon`). 
-    * *Note:* This will create an entity named `sensor.ramon_clockhand`.
+1.  **Name:** Enter the person's name (e.g., `Ron`). 
+    * *Note:* This will create an entity named `sensor.ron_clockhand`.
 2.  **Offset:** (Optional) Enter a number (e.g., `8`). This rotates the hand slightly so it doesn't cover other hands when in the same location.
 3.  **Template:** Paste your Jinja2 logic here (see example below).
 
@@ -55,7 +55,7 @@ To add a person, go to **Settings > Devices > Add Integration > Weasley Clock** 
 ## 📝 Example Logic (Template)
 
 **The Goal:**
-We want to track "Ramon". We want to use native Home Assistant Groups for family zones so we don't have to hardcode them.
+We want to track "Ron Weasley". We want to use native Home Assistant Groups for family zones so we don't have to hardcode them.
 
 **1. Create Helpers (Optional but Recommended):**
 * Go to **Settings > Devices > Helpers > Create Helper > Group > Zone Group**.
@@ -68,8 +68,8 @@ Paste this into the "Template" field during setup.
 ```jinja
 {# --- DEFINE VARIABLES --- #}
 {# Change these entities to match your device #}
-{% set tracker = 'device_tracker.iphone_ramon' %}
-{% set battery = states('sensor.iphone_ramon_battery_level') | int(100) %}
+{% set tracker = 'device_tracker.iphone_ron' %}
+{% set battery = states('sensor.iphone_ron_battery_level') | int(100) %}
 {% set current_zone = states(tracker) %}
 {% set is_night = is_state('sun.sun', 'below_horizon') %}
 
@@ -108,14 +108,14 @@ Add a **"Manual"** card to your dashboard and paste this YAML. The weasley-clock
 type: custom:weasley-clock-card
 image: /local/weasley_clock/reloj_weasley.jpeg
 hands:
-  # Hand 1: Ramon
-  - entity: sensor.ramon_clockhand
-    image: /local/weasley_clock/manecilla_ramon.png
+  # Hand 1: Ron
+  - entity: sensor.ron_clockhand
+    image: /local/weasley_clock/manecilla_ron.png
     width: 100%
     
-  # Hand 2: Vero (Example of custom sizing in CSS)
-  - entity: sensor.vero_clockhand
-    image: /local/weasley_clock/manecilla_vero.png
+  # Hand 2: Ginny (Example of custom sizing in CSS)
+  - entity: sensor.ginny_clockhand
+    image: /local/weasley_clock/manecilla_ginny.png
     width: 117%
     top: -8.5%
     left: -8.5%
