@@ -1,0 +1,69 @@
+{
+  "title": "Weasley Clock",
+  "config": {
+    "step": {
+      "clock_face": {
+        "title": "Configurar el reloj",
+        "description": "Define las 13 posiciones. Después añade cada persona desde Añadir integración.",
+        "data": {
+          "slot_1_name": "Posición 1",
+          "slot_2_name": "Posición 2",
+          "slot_3_name": "Posición 3",
+          "slot_4_name": "Posición 4",
+          "slot_5_name": "Posición 5",
+          "slot_6_name": "Posición 6",
+          "slot_7_name": "Posición 7",
+          "slot_8_name": "Posición 8",
+          "slot_9_name": "Posición 9",
+          "slot_10_name": "Posición 10",
+          "slot_11_name": "Posición 11",
+          "slot_12_name": "Posición 12",
+          "slot_13_name": "Posición 13"
+        }
+      },
+      "add_hand": {
+        "title": "Añadir persona",
+        "description": "La plantilla debe devolver exactamente un nombre de posición del hub.",
+        "data": {
+          "name": "Nombre",
+          "offset": "Desplazamiento (grados)",
+          "template": "Condiciones (plantilla Jinja)"
+        }
+      }
+    },
+    "error": {
+      "invalid_template": "La plantilla Jinja no es válida.",
+      "invalid_slots": "Las 13 posiciones deben tener nombres distintos y no vacíos."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Reconfigurar Weasley Clock",
+        "description": "Edita las posiciones del hub o las condiciones de esta persona.",
+        "data": {
+          "slot_1_name": "Posición 1",
+          "slot_2_name": "Posición 2",
+          "slot_3_name": "Posición 3",
+          "slot_4_name": "Posición 4",
+          "slot_5_name": "Posición 5",
+          "slot_6_name": "Posición 6",
+          "slot_7_name": "Posición 7",
+          "slot_8_name": "Posición 8",
+          "slot_9_name": "Posición 9",
+          "slot_10_name": "Posición 10",
+          "slot_11_name": "Posición 11",
+          "slot_12_name": "Posición 12",
+          "slot_13_name": "Posición 13",
+          "name": "Nombre",
+          "offset": "Desplazamiento (grados)",
+          "template": "Condiciones (plantilla Jinja)"
+        }
+      }
+    },
+    "error": {
+      "invalid_template": "La plantilla Jinja no es válida.",
+      "invalid_slots": "Las 13 posiciones deben tener nombres distintos y no vacíos."
+    }
+  }
+}

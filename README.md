@@ -120,3 +120,35 @@ hands:
     top: -8.5%
     left: -8.5%
 ```
+
+## Updating to 1.1.0 / Actualización
+
+Copy the complete `custom_components/weasley_clock` folder (including `translations`
+and `www`) into `/config/custom_components/`, restart Home Assistant, and refresh
+all browser/app pages. Existing hub and hand entries and entity IDs are preserved.
+The file is named **weasley-card.js** and is served at
+`/weasley_clock/weasley-card.js?v=1.1.0`. The integration loads it as a frontend
+module automatically; it does not need to appear in the dashboard Resources list.
+The card appears as **Weasley Clock** in the card picker and uses the YAML above.
+If needed, register that URL manually as a JavaScript module and refresh the page.
+
+En **Ajustes → Dispositivos y servicios → Weasley Clock**, pulsa **Configurar** en
+el hub para editar las 13 posiciones. Pulsa **Configurar** en cada persona para
+editar su nombre, desplazamiento y condiciones Jinja. Añade personas con
+**Añadir integración → Weasley Clock** otra vez: crear el hub no añade personas
+ni abre automáticamente sus condiciones. Cada persona tiene un dispositivo y
+sensor vinculados al hub; el hub contiene un sensor con la lista de posiciones.
+Si cambias una posición, actualiza las plantillas que devolvían el nombre anterior.
+
+La tarjeta muestra el estado de las personas y un enlace **Configurar Weasley
+Clock** a la integración. Puedes ocultarlos con `show_states: false` y
+`show_configure: false`. Pulsa un estado para abrir la entidad. Una plantilla
+inválida o una posición desconocida deja el sensor no disponible y añade el
+motivo en `configuration_error`; la tarjeta oculta esa manecilla.
+
+
+Template diagnostics also show `missing_entities`, `unavailable_entities`, and
+`configuration_warning` on each hand and visibly in the card. Warnings update
+when those entities change and do not invalidate a valid fallback location.
+Only entity references accessed in the evaluated Jinja branch are checked;
+unexecuted branches and arbitrary strings are not exhaustively validated.

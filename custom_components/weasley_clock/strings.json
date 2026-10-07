@@ -1,0 +1,69 @@
+{
+  "title": "Weasley Clock",
+  "config": {
+    "step": {
+      "clock_face": {
+        "title": "Configure clock face",
+        "description": "Define 13 locations. Then add each person using Add integration.",
+        "data": {
+          "slot_1_name": "Location 1",
+          "slot_2_name": "Location 2",
+          "slot_3_name": "Location 3",
+          "slot_4_name": "Location 4",
+          "slot_5_name": "Location 5",
+          "slot_6_name": "Location 6",
+          "slot_7_name": "Location 7",
+          "slot_8_name": "Location 8",
+          "slot_9_name": "Location 9",
+          "slot_10_name": "Location 10",
+          "slot_11_name": "Location 11",
+          "slot_12_name": "Location 12",
+          "slot_13_name": "Location 13"
+        }
+      },
+      "add_hand": {
+        "title": "Add person",
+        "description": "The template must return exactly one hub location name.",
+        "data": {
+          "name": "Name",
+          "offset": "Offset (degrees)",
+          "template": "Conditions (Jinja template)"
+        }
+      }
+    },
+    "error": {
+      "invalid_template": "Invalid Jinja template.",
+      "invalid_slots": "All 13 locations must have distinct, nonempty names."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Reconfigure Weasley Clock",
+        "description": "Edit hub locations or this person?s conditions.",
+        "data": {
+          "slot_1_name": "Location 1",
+          "slot_2_name": "Location 2",
+          "slot_3_name": "Location 3",
+          "slot_4_name": "Location 4",
+          "slot_5_name": "Location 5",
+          "slot_6_name": "Location 6",
+          "slot_7_name": "Location 7",
+          "slot_8_name": "Location 8",
+          "slot_9_name": "Location 9",
+          "slot_10_name": "Location 10",
+          "slot_11_name": "Location 11",
+          "slot_12_name": "Location 12",
+          "slot_13_name": "Location 13",
+          "name": "Name",
+          "offset": "Offset (degrees)",
+          "template": "Conditions (Jinja template)"
+        }
+      }
+    },
+    "error": {
+      "invalid_template": "Invalid Jinja template.",
+      "invalid_slots": "All 13 locations must have distinct, nonempty names."
+    }
+  }
+}

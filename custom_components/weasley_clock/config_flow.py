@@ -5,7 +5,8 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.helpers import selector
 from homeassistant.helpers.template import Template
-import homeassistant.helpers.config_validation as cv
+from homeassistant.core import callback
+from homeassistant.exceptions import TemplateError
 
 from .const import DOMAIN
 
@@ -21,6 +22,12 @@ class WeasleyClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Weasley Clock."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        return WeasleyClockOptionsFlow()
+
 
     async def async_step_user(self, user_input=None):
         """Handle the start of the config flow."""
@@ -38,16 +45,20 @@ class WeasleyClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_clock_face(self, user_input=None):
         """Step 1: Configure the 13 Clock Locations."""
         if user_input is not None:
-            return self.async_create_entry(title="Weasley Clock Hub", data=user_input)
+            errors = validate_slots(user_input)
+            if not errors:
+                return self.async_create_entry(title="Weasley Clock Hub", data=user_input)
 
+        errors = validate_slots(user_input) if user_input else {}
         # Build schema for 13 slots
         schema = {}
         for i in range(1, 14):
             default_name = DEFAULT_SLOTS[i - 1] if i - 1 < len(DEFAULT_SLOTS) else f"Location {i}"
-            schema[vol.Required(f"slot_{i}_name", default=default_name)] = str
+            schema[vol.Required(f"slot_{i}_name", default=(user_input or {}).get(f"slot_{i}_name", default_name))] = str
 
         return self.async_show_form(
             step_id="clock_face",
+            errors=errors,
             data_schema=vol.Schema(schema),
             description_placeholders={"info": "Define the names for your 13 clock positions."}
         )
@@ -61,7 +72,7 @@ class WeasleyClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 Template(user_input["template"], self.hass).ensure_valid()
                 return self.async_create_entry(title=user_input["name"], data=user_input)
-            except Exception:
+            except TemplateError:
                 errors["template"] = "invalid_template"
 
         return self.async_show_form(
@@ -76,3 +87,39 @@ class WeasleyClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 "info": "Paste your logic below. It must return EXACTLY one of the names you defined in the Clock Face."
             }
         )
+
+def validate_slots(data):
+    """Names must be nonempty and distinct to map to one angle."""
+    names = [data.get(f"slot_{i}_name", "").strip() for i in range(1, 14)]
+    if not all(names) or len(set(names)) != 13:
+        return {"base": "invalid_slots"}
+    for i, name in enumerate(names, 1):
+        data[f"slot_{i}_name"] = name
+    return {}
+
+
+class WeasleyClockOptionsFlow(config_entries.OptionsFlow):
+    """Expose Configure for existing hubs and hands without removing entities."""
+
+    async def async_step_init(self, user_input=None):
+        current = {**self.config_entry.data, **self.config_entry.options}
+        hub = "slot_1_name" in current
+        errors = {}
+        if user_input is not None:
+            if hub:
+                errors = validate_slots(user_input)
+            else:
+                try:
+                    Template(user_input["template"], self.hass).ensure_valid()
+                except TemplateError:
+                    errors["template"] = "invalid_template"
+            if not errors:
+                return self.async_create_entry(title="", data=user_input)
+        values = user_input or current
+        schema = ({vol.Required(f"slot_{i}_name", default=values[f"slot_{i}_name"]): str
+                   for i in range(1, 14)} if hub else {
+            vol.Required("name", default=values["name"]): str,
+            vol.Optional("offset", default=values.get("offset", 0)): int,
+            vol.Required("template", default=values["template"]): selector.TemplateSelector(),
+        })
+        return self.async_show_form(step_id="init", data_schema=vol.Schema(schema), errors=errors)
