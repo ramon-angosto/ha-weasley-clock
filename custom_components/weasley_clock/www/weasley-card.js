@@ -20,7 +20,7 @@ class WeasleyClockCard extends HTMLElement {
     const face = document.createElement('div');
     Object.assign(face.style, { position: 'relative', width: '100%', overflow: 'hidden' });
     const background = document.createElement('img');
-    background.src = this.config.image;
+    background.src = this.imageUrl(this.config.image);
     background.alt = 'Weasley Clock';
     background.style.width = '100%';
     background.style.display = 'block';
@@ -33,7 +33,7 @@ class WeasleyClockCard extends HTMLElement {
       const angle = state?.attributes.angle;
       if (state && !['unknown', 'unavailable'].includes(state.state) && Number.isFinite(angle)) {
         const image = document.createElement('img');
-        image.src = hand.image;
+        image.src = this.imageUrl(hand.image);
         image.alt = state.attributes.friendly_name || hand.entity;
         Object.assign(image.style, {
           position: 'absolute', top: hand.top || '0%', left: hand.left || '0%',
@@ -70,8 +70,20 @@ class WeasleyClockCard extends HTMLElement {
     }
   }
 
+  imageUrl(value) {
+    const mediaPrefix = 'media-source://weasley_clock/';
+    if (value.startsWith(mediaPrefix)) {
+      return '/weasley_clock/images/' + value.slice(mediaPrefix.length).split('/').map(encodeURIComponent).join('/');
+    }
+    // Filenames refer to the clock folder shown in Multimedia.
+    if (!value.startsWith('/') && !value.includes('://')) {
+      return '/weasley_clock/images/' + value.split('/').map(encodeURIComponent).join('/');
+    }
+    return value;
+  }
+
   static getStubConfig() {
-    return { image: '/local/weasley_clock/reloj_weasley.jpeg', hands: [] };
+    return { image: '/weasley_clock/images/reloj_weasley.jpeg', hands: [] };
   }
 
   getCardSize() { return 3; }

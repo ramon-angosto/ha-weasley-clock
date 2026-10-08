@@ -1,95 +1,23 @@
-"""Config flow for Weasley Clock integration."""
+"""Configure one clock with person subentries."""
 from __future__ import annotations
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.helpers import selector
-from homeassistant.helpers.template import Template
 from homeassistant.core import callback
 from homeassistant.exceptions import TemplateError
+from homeassistant.helpers import selector
+from homeassistant.helpers.template import Template
 
 from .const import DOMAIN
 
-# Default names for the 13 slots if user doesn't change them
 DEFAULT_SLOTS = [
-    "Home", "Work", "Gym", "Lost", "Traveling",
-    "Mortal Peril", "Family", "Friends", "Cinema",
-    "Diagon Alley", "Teleporting", "In Bed", "Platform 9 3/4"
+    "Home", "Work", "Gym", "Lost", "Traveling", "Mortal Peril", "Family",
+    "Friends", "Cinema", "Diagon Alley", "Teleporting", "In Bed", "Platform 9 3/4",
 ]
 
 
-class WeasleyClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for Weasley Clock."""
-
-    VERSION = 1
-
-    @staticmethod
-    @callback
-    def async_get_options_flow(config_entry):
-        return WeasleyClockOptionsFlow()
-
-
-    async def async_step_user(self, user_input=None):
-        """Handle the start of the config flow."""
-        # 1. Check if the Main Clock Face is already configured
-        entries = self._async_current_entries()
-        clock_face_exists = any("slot_1_name" in e.data for e in entries)
-
-        # 2. If not, force the user to set up the locations first
-        if not clock_face_exists:
-            return await self.async_step_clock_face()
-
-        # 3. If yes, go straight to adding a Person/Hand
-        return await self.async_step_add_hand()
-
-    async def async_step_clock_face(self, user_input=None):
-        """Step 1: Configure the 13 Clock Locations."""
-        if user_input is not None:
-            errors = validate_slots(user_input)
-            if not errors:
-                return self.async_create_entry(title="Weasley Clock Hub", data=user_input)
-
-        errors = validate_slots(user_input) if user_input else {}
-        # Build schema for 13 slots
-        schema = {}
-        for i in range(1, 14):
-            default_name = DEFAULT_SLOTS[i - 1] if i - 1 < len(DEFAULT_SLOTS) else f"Location {i}"
-            schema[vol.Required(f"slot_{i}_name", default=(user_input or {}).get(f"slot_{i}_name", default_name))] = str
-
-        return self.async_show_form(
-            step_id="clock_face",
-            errors=errors,
-            data_schema=vol.Schema(schema),
-            description_placeholders={"info": "Define the names for your 13 clock positions."}
-        )
-
-    async def async_step_add_hand(self, user_input=None):
-        """Step 2: Add a new Person (Hand)."""
-        errors = {}
-
-        if user_input is not None:
-            # Validate the Jinja template
-            try:
-                Template(user_input["template"], self.hass).ensure_valid()
-                return self.async_create_entry(title=user_input["name"], data=user_input)
-            except TemplateError:
-                errors["template"] = "invalid_template"
-
-        return self.async_show_form(
-            step_id="add_hand",
-            errors=errors,
-            data_schema=vol.Schema({
-                vol.Required("name"): str,
-                vol.Optional("offset", default=0): int,
-                vol.Required("template"): selector.TemplateSelector(),
-            }),
-            description_placeholders={
-                "info": "Paste your logic below. It must return EXACTLY one of the names you defined in the Clock Face."
-            }
-        )
-
 def validate_slots(data):
-    """Names must be nonempty and distinct to map to one angle."""
+    """Require a distinct nonempty name for every position."""
     names = [data.get(f"slot_{i}_name", "").strip() for i in range(1, 14)]
     if not all(names) or len(set(names)) != 13:
         return {"base": "invalid_slots"}
@@ -98,28 +26,94 @@ def validate_slots(data):
     return {}
 
 
-class WeasleyClockOptionsFlow(config_entries.OptionsFlow):
-    """Expose Configure for existing hubs and hands without removing entities."""
+def face_schema(values):
+    return vol.Schema({
+        vol.Required(f"slot_{i}_name", default=values.get(f"slot_{i}_name", DEFAULT_SLOTS[i - 1])): str
+        for i in range(1, 14)
+    })
 
+
+def hand_schema(values):
+    return vol.Schema({
+        vol.Required("name", default=values.get("name", "")): str,
+        vol.Optional("offset", default=values.get("offset", 0)): int,
+        vol.Required("template", default=values.get("template", "")): selector.TemplateSelector(),
+    })
+
+
+def validate_hand(hass, data):
+    errors = {}
+    if not data["name"].strip():
+        errors["name"] = "invalid_name"
+    try:
+        Template(data["template"], hass).ensure_valid()
+    except TemplateError:
+        errors["template"] = "invalid_template"
+    return errors
+
+
+class WeasleyClockConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        return WeasleyClockOptionsFlow()
+
+    @classmethod
+    @callback
+    def async_get_supported_subentry_types(cls, config_entry):
+        return {"person": WeasleyPersonFlow}
+
+    async def async_step_user(self, user_input=None):
+        if self._async_current_entries():
+            return self.async_abort(reason="single_instance_allowed")
+        return await self.async_step_clock_face(user_input)
+
+    async def async_step_clock_face(self, user_input=None):
+        errors = validate_slots(user_input) if user_input is not None else {}
+        if user_input is not None and not errors:
+            return self.async_create_entry(title="Weasley Clock", data=user_input)
+        return self.async_show_form(
+            step_id="clock_face", data_schema=face_schema(user_input or {}), errors=errors,
+        )
+
+
+class WeasleyClockOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         current = {**self.config_entry.data, **self.config_entry.options}
-        hub = "slot_1_name" in current
-        errors = {}
-        if user_input is not None:
-            if hub:
-                errors = validate_slots(user_input)
-            else:
-                try:
-                    Template(user_input["template"], self.hass).ensure_valid()
-                except TemplateError:
-                    errors["template"] = "invalid_template"
-            if not errors:
-                return self.async_create_entry(title="", data=user_input)
-        values = user_input or current
-        schema = ({vol.Required(f"slot_{i}_name", default=values[f"slot_{i}_name"]): str
-                   for i in range(1, 14)} if hub else {
-            vol.Required("name", default=values["name"]): str,
-            vol.Optional("offset", default=values.get("offset", 0)): int,
-            vol.Required("template", default=values["template"]): selector.TemplateSelector(),
-        })
-        return self.async_show_form(step_id="init", data_schema=vol.Schema(schema), errors=errors)
+        errors = validate_slots(user_input) if user_input is not None else {}
+        if user_input is not None and not errors:
+            return self.async_create_entry(title="", data=user_input)
+        return self.async_show_form(
+            step_id="init", data_schema=face_schema(user_input or current), errors=errors,
+        )
+
+
+class WeasleyPersonFlow(config_entries.ConfigSubentryFlow):
+    """People belong to the clock entry and can be reconfigured individually."""
+
+    async def async_step_user(self, user_input=None):
+        return await self._async_person_form("user", user_input)
+
+    async def async_step_reconfigure(self, user_input=None):
+        return await self._async_person_form("reconfigure", user_input)
+
+    async def _async_person_form(self, step, user_input):
+        existing = self._get_reconfigure_subentry() if step == "reconfigure" else None
+        errors = validate_hand(self.hass, user_input) if user_input is not None else {}
+        if user_input is not None and not errors:
+            if existing:
+                return self.async_update_and_abort(
+                    self._get_entry(), existing, title=user_input["name"],
+                    data={**existing.data, **user_input},
+                )
+            return self.async_create_entry(title=user_input["name"], data=user_input)
+        entry = self._get_entry()
+        face = {**entry.data, **entry.options}
+        return self.async_show_form(
+            step_id=step, data_schema=hand_schema(user_input or (existing.data if existing else {})),
+            errors=errors, description_placeholders={
+                "locations": ", ".join(face[f"slot_{i}_name"] for i in range(1, 14)),
+            },
+        )

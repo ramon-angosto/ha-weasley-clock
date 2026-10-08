@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1] / 'custom_components' / 'weasley_cloc
 
 
 def load_function(filename, name, namespace):
-    tree = ast.parse((ROOT / filename).read_text())
+    tree = ast.parse((ROOT / filename).read_text(encoding='utf-8-sig'))
     nodes = list(tree.body)
     for node in tree.body:
         if isinstance(node, ast.ClassDef):
@@ -19,6 +19,23 @@ def load_function(filename, name, namespace):
 
 
 class RegressionTests(unittest.TestCase):
+    def test_hub_location_states_and_stable_ids(self):
+        from types import SimpleNamespace
+        namespace = {'SensorEntity': object, 'DeviceInfo': dict, 'DOMAIN': 'weasley_clock',
+                     'CLOCK_ANGLES': list(range(13))}
+        tree = ast.parse((ROOT / 'sensor.py').read_text(encoding='utf-8-sig'))
+        cls = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == 'WeasleyLocationSensor')
+        exec(compile(ast.Module(body=[cls], type_ignores=[]), 'sensor.py', 'exec'), namespace)
+        entry = SimpleNamespace(entry_id='hub', data={f'slot_{i}_name': f'Place {i}' for i in range(1, 14)}, options={})
+        sensors = [namespace['WeasleyLocationSensor'](entry, i) for i in range(1, 14)]
+        self.assertEqual([s._attr_native_value for s in sensors], [f'Place {i}' for i in range(1, 14)])
+        self.assertEqual(len({s._attr_unique_id for s in sensors}), 13)
+        entry.options = {'slot_1_name': 'Home'}
+        renamed = namespace['WeasleyLocationSensor'](entry, 1)
+        self.assertEqual(renamed._attr_native_value, 'Home')
+        self.assertEqual(renamed._attr_unique_id, sensors[0]._attr_unique_id)
+        self.assertEqual(renamed._attr_device_info['identifiers'], {('weasley_clock', 'hub')})
+
     def test_slot_names(self):
         validate = load_function('config_flow.py', 'validate_slots', {})
         data = {f'slot_{i}_name': f'Location {i}' for i in range(1, 14)}

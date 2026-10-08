@@ -11,6 +11,7 @@ from homeassistant.helpers.event import (
 )
 from homeassistant.exceptions import TemplateError
 from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers import entity_registry as er
 
 from .const import DOMAIN, CLOCK_ANGLES
 
@@ -22,31 +23,19 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Weasley Hand sensor."""
 
-    if "slot_1_name" in entry.data:
-        async_add_entities([WeasleyHubSensor(entry)])
-        return
-
-    hub = None
-    # 1. Retrieve the Global Clock Face configuration
-    clock_config = None
-    for e in hass.config_entries.async_entries(DOMAIN):
-        if "slot_1_name" in e.data:
-            hub = e
-            clock_config = {**e.data, **e.options}
-            break
-
-    if not clock_config:
-        return
-
-    # 2. Build the name-to-angle mapping
-    mapping = {}
-    for i in range(1, 14):
-        name = clock_config.get(f"slot_{i}_name")
-        if name:
-            mapping[name] = CLOCK_ANGLES[i - 1]
-
-    # 3. Create the Entity
-    async_add_entities([WeasleyHandSensor(hass, entry, mapping, hub)])
+    registry = er.async_get(hass)
+    old_entity = registry.async_get_entity_id("sensor", DOMAIN, f"{entry.entry_id}_locations")
+    if old_entity:
+        registry.async_remove(old_entity)
+    data = {**entry.data, **entry.options}
+    mapping = {data[f"slot_{i}_name"]: CLOCK_ANGLES[i - 1] for i in range(1, 14)}
+    async_add_entities([WeasleyLocationSensor(entry, slot) for slot in range(1, 14)])
+    for person in entry.subentries.values():
+        if person.subentry_type == "person":
+            async_add_entities(
+                [WeasleyHandSensor(hass, person, mapping, entry)],
+                config_subentry_id=person.subentry_id,
+            )
 
 
 class WeasleyHandSensor(SensorEntity):
@@ -54,17 +43,18 @@ class WeasleyHandSensor(SensorEntity):
 
     _attr_should_poll = False
 
-    def __init__(self, hass, entry, mapping, hub):
+    def __init__(self, hass, person, mapping, clock):
         """Initialize the sensor."""
-        data = {**entry.data, **entry.options}
+        data = person.data
+        identifier = data.get("legacy_entry_id", person.subentry_id)
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)}, name=data["name"],
+            identifiers={(DOMAIN, identifier)}, name=data["name"],
             manufacturer="Weasley Clock", model="Clock hand",
-            via_device=(DOMAIN, hub.entry_id),
+            via_device=(DOMAIN, clock.entry_id),
         )
         # Naming Convention: "Ramon" -> "Ramon Clockhand" -> sensor.ramon_clockhand
         self._attr_name = f"{data['name']} Clockhand"
-        self._attr_unique_id = f"{entry.entry_id}_clockhand"
+        self._attr_unique_id = f"{identifier}_clockhand"
 
         self._template = Template(data["template"], hass)
         self._diagnostic_unsubscribe = None
@@ -140,21 +130,23 @@ class WeasleyHandSensor(SensorEntity):
             self.async_write_ha_state()
 
 
-class WeasleyHubSensor(SensorEntity):
-    """Expose the face configuration on the hub device."""
+class WeasleyLocationSensor(SensorEntity):
+    """Expose each configured location as a text sensor on the clock."""
 
     _attr_should_poll = False
-    _attr_name = "Weasley Clock Locations"
+    _attr_has_entity_name = True
     _attr_icon = "mdi:clock-outline"
 
-    def __init__(self, entry):
+    def __init__(self, entry, slot):
         data = {**entry.data, **entry.options}
-        self._attr_unique_id = f"{entry.entry_id}_locations"
-        self._attr_native_value = 13
+        self._attr_unique_id = f"{entry.entry_id}_location_{slot}"
+        self._attr_name = f"Location {slot}"
+        self._attr_native_value = data[f"slot_{slot}_name"]
         self._attr_extra_state_attributes = {
-            "locations": [data[f"slot_{i}_name"] for i in range(1, 14)]
+            "position": slot,
+            "angle": CLOCK_ANGLES[slot - 1],
         }
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)}, name="Weasley Clock Hub",
+            identifiers={(DOMAIN, entry.entry_id)}, name="Weasley Clock",
             manufacturer="Weasley Clock", model="Clock face",
         )
