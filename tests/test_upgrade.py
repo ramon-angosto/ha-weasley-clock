@@ -90,6 +90,7 @@ class UpgradeTests(unittest.IsolatedAsyncioTestCase):
         subentry_factory = lambda **kw: SimpleNamespace(subentry_id='person-ron', **kw)
         ns = load('__init__.py', ['async_setup'], {
             'HomeAssistant': object, 'DOMAIN':'weasley_clock', 'MappingProxyType':MappingProxyType,
+            'async_setup_graphics':lambda hass:None,
             'ConfigSubentry':subentry_factory,
             'dr':SimpleNamespace(async_get=lambda h:devices, async_entries_for_config_entry=lambda r, i: [device] if device.config_entry_id==i else []),
             'er':SimpleNamespace(async_get=lambda h:entities, async_entries_for_config_entry=lambda r, i: [entity] if entity.config_entry_id==i else []),

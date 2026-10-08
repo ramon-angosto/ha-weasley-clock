@@ -16,17 +16,19 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 
 from .const import DOMAIN
+from .graphics import async_setup_graphics
 
 _LOGGER = logging.getLogger(__name__)
 PLATFORMS = [Platform.SENSOR]
 CARD_URL = "/weasley_clock/weasley-card.js"
-CARD_RESOURCE = f"{CARD_URL}?v=1.2.0"
+CARD_RESOURCE = f"{CARD_URL}?v=1.3.0"
 IMAGE_URL = "/weasley_clock/images"
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
 
 
 async def async_setup(hass: HomeAssistant, config) -> bool:
     """Migrate separate person entries before any entry starts loading."""
+    async_setup_graphics(hass)
     entries = hass.config_entries.async_entries(DOMAIN)
     clock = next((entry for entry in entries if "slot_1_name" in entry.data), None)
     if clock is None:

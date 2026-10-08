@@ -1,0 +1,29 @@
+snapshot:
+  name: Snapshot
+  description: Generate a PNG of the clock face and current hand positions, returning its file path and URL when requested.
+  fields:
+    image:
+      name: Clock face image
+      description: Optional filename in Weasley Clock Multimedia or a /local/ image URL. Defaults to the configured or discovered face.
+      example: reloj_weasley.png
+      selector:
+        text:
+    hands:
+      name: Hands
+      description: Optional list of entity, image, width, top and left. Defaults to the person images configured in the clock.
+      selector:
+        object:
+    filename:
+      name: Output filename
+      description: PNG filename saved in the Weasley Clock media folder. Repeated calls replace this snapshot.
+      default: weasley_clock_snapshot.png
+      selector:
+        text:
+    width:
+      name: Image width
+      description: Optional width in pixels. The aspect ratio is preserved and dimensions are capped at 4096 pixels.
+      selector:
+        number:
+          min: 128
+          max: 4096
+          mode: box

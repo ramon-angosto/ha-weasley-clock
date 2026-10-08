@@ -18,7 +18,8 @@
           "slot_10_name": "Posición 10",
           "slot_11_name": "Posición 11",
           "slot_12_name": "Posición 12",
-          "slot_13_name": "Posición 13"
+          "slot_13_name": "Posición 13",
+          "image": "Imagen base (vacío: buscar en Multimedia)"
         }
       }
     },
@@ -48,7 +49,8 @@
           "slot_10_name": "Posición 10",
           "slot_11_name": "Posición 11",
           "slot_12_name": "Posición 12",
-          "slot_13_name": "Posición 13"
+          "slot_13_name": "Posición 13",
+          "image": "Imagen base (vacío: buscar en Multimedia)"
         }
       }
     },
@@ -67,7 +69,11 @@
           "data": {
             "name": "Nombre",
             "offset": "Desplazamiento (grados)",
-            "template": "Condiciones (plantilla Jinja)"
+            "template": "Condiciones (plantilla Jinja)",
+            "image": "Imagen de manecilla (vacío: buscar por nombre)",
+            "width": "Anchura (porcentaje o px)",
+            "top": "Desplazamiento superior",
+            "left": "Desplazamiento izquierdo"
           }
         },
         "reconfigure": {
@@ -76,17 +82,46 @@
           "data": {
             "name": "Nombre",
             "offset": "Desplazamiento (grados)",
-            "template": "Condiciones (plantilla Jinja)"
+            "template": "Condiciones (plantilla Jinja)",
+            "image": "Imagen de manecilla (vacío: buscar por nombre)",
+            "width": "Anchura (porcentaje o px)",
+            "top": "Desplazamiento superior",
+            "left": "Desplazamiento izquierdo"
           }
         }
       },
       "error": {
         "invalid_template": "La plantilla Jinja no es válida.",
         "invalid_slots": "Las 13 posiciones deben tener nombres distintos y no vacíos.",
-        "invalid_name": "Escribe un nombre."
+        "invalid_name": "Escribe un nombre.",
+        "invalid_layout": "Usa un porcentaje o píxeles; la anchura debe ser positiva."
       },
       "abort": {
         "reconfigure_successful": "Persona actualizada."
+      }
+    }
+  },
+  "services": {
+    "snapshot": {
+      "name": "Obtener captura",
+      "description": "Guarda un PNG del reloj con las posiciones actuales y devuelve su ruta y URL.",
+      "fields": {
+        "image": {
+          "name": "Imagen base",
+          "description": "Opcional: nombre de archivo de Multimedia o URL /local/. Por defecto se busca la base del reloj."
+        },
+        "hands": {
+          "name": "Manecillas",
+          "description": "Opcional: lista con entity, image, width, top y left. Por defecto usa las personas del reloj."
+        },
+        "filename": {
+          "name": "Nombre del PNG",
+          "description": "Se guarda en Multimedia/weasley_clock y se reemplaza en cada llamada."
+        },
+        "width": {
+          "name": "Anchura en píxeles",
+          "description": "Opcional: conserva la proporción de la imagen."
+        }
       }
     }
   }

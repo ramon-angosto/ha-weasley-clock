@@ -1,6 +1,8 @@
 """Configure one clock with person subentries."""
 from __future__ import annotations
 
+import re
+
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
@@ -27,10 +29,12 @@ def validate_slots(data):
 
 
 def face_schema(values):
-    return vol.Schema({
+    fields = {
         vol.Required(f"slot_{i}_name", default=values.get(f"slot_{i}_name", DEFAULT_SLOTS[i - 1])): str
         for i in range(1, 14)
-    })
+    }
+    fields[vol.Optional("image", default=values.get("image", ""))] = str
+    return vol.Schema(fields)
 
 
 def hand_schema(values):
@@ -38,6 +42,10 @@ def hand_schema(values):
         vol.Required("name", default=values.get("name", "")): str,
         vol.Optional("offset", default=values.get("offset", 0)): int,
         vol.Required("template", default=values.get("template", "")): selector.TemplateSelector(),
+        vol.Optional("image", default=values.get("image", "")): str,
+        vol.Optional("width", default=values.get("width", "100%")): str,
+        vol.Optional("top", default=values.get("top", "0%")): str,
+        vol.Optional("left", default=values.get("left", "0%")): str,
     })
 
 
@@ -45,6 +53,10 @@ def validate_hand(hass, data):
     errors = {}
     if not data["name"].strip():
         errors["name"] = "invalid_name"
+    for field, default in (("width", "100%"), ("top", "0%"), ("left", "0%")):
+        value = data.get(field, default).strip()
+        if not re.fullmatch(r"-?\d+(?:\.\d+)?(?:%|px)?", value) or (field == "width" and float(value.rstrip("%px")) <= 0):
+            errors[field] = "invalid_layout"
     try:
         Template(data["template"], hass).ensure_valid()
     except TemplateError:

@@ -18,6 +18,8 @@ person's clock hand at home, work, travelling, or any of your configured locatio
 - A Jinja template per person using your existing Home Assistant entities.
 - Individual hand offsets to help separate people at the same location.
 - A Lovelace card with custom face and hand images, person states, and diagnostics.
+- Automatic clock-face discovery in Multimedia and a Snapshot button.
+- A server-side `weasley_clock.snapshot` action for automations, displays and smart frames.
 - Clock graphics accessible in Multimedia, with automatic dashboard resource registration.
 - Automatic migration from older separate person entries while preserving sensor IDs.
 
@@ -53,6 +55,7 @@ for changes between versions.
 [Configure the clock and people](#setup-guide) ·
 [Template example](#example-logic-template) ·
 [Dashboard card](#dashboard-card-frontend) ·
+[Snapshots](#snapshots-for-displays-and-smart-frames) ·
 [Upgrade guide](#updating-to-120)
 
 ## Asset Preparation (Graphics)
@@ -172,12 +175,100 @@ hands:
     left: -8.5%
 ```
 
+## Automatic images and snapshots (1.3.0)
+
+The dashboard card can now be added with only:
+
+```yaml
+type: custom:weasley-clock-card
+```
+
+It retrieves the clock and person configuration from the integration. In
+**Configure Weasley Clock**, the optional **Clock face image** field accepts a
+filename from Multimedia, a `/weasley_clock/images/` URL, or an existing `/local/`
+URL. Leave it empty to discover the face automatically.
+
+Discovery checks `reloj_weasley`, `clock_face`, `clock`, `reloj`, and `weasley_clock`
+with PNG, JPG, JPEG, WebP or GIF extensions. If there is exactly one other candidate
+image, it is used; ambiguous folders ask you to configure the face instead of
+choosing randomly. Uploaded images are checked when loading the card; use
+**Search again** if no face was found, or reload the dashboard after changing images.
+
+On each person's **Reconfigure** form, set their hand image and optional `width`,
+`top`, and `left` values. Empty hand image fields look for `manecilla_<name>`,
+`hand_<name>`, or `<name>` in Multimedia (for example, `manecilla_ron.png`).
+Explicit card YAML still overrides the automatic configuration.
+
+### Snapshots for displays and smart frames
+
+Click **Snapshot / Obtener captura** in the card to generate a PNG containing only
+the clock face and hands at their current angles. Use **Open PNG snapshot** to open
+it. Set `show_snapshot: false` to hide the button.
+
+The action is also available in **Developer tools > Actions** and automations:
+
+```yaml
+action: weasley_clock.snapshot
+data: {}
+response_variable: clock_snapshot
+```
+
+This uses the face and hand images configured in the integration, without requiring
+an open browser. For a card with custom YAML images or sizing, pass the same values
+in the action; the card's Snapshot button does this automatically:
+
+```yaml
+action: weasley_clock.snapshot
+data:
+  image: reloj_weasley.jpeg
+  hands:
+    - entity: sensor.ron_clockhand
+      image: manecilla_ron.png
+      width: "100%"
+      top: "0%"
+      left: "0%"
+  filename: weasley_clock_snapshot.png
+  width: 1024
+response_variable: clock_snapshot
+```
+
+The response includes `filename` (absolute path), `url` (relative Home Assistant URL
+with a cache-busting query), `media_content_id`, image dimensions, and
+`skipped_entities`. The default PNG is `/media/weasley_clock/weasley_clock_snapshot.png`
+on Home Assistant OS and also appears in Multimedia. Every call replaces that file
+atomically. A screen can fetch it at:
+
+```text
+http://YOUR_HOME_ASSISTANT:8123/weasley_clock/images/weasley_clock_snapshot.png
+```
+
+Generate a fresh snapshot before sending its URL or file to your screen's own
+integration. For example, a time trigger can refresh it every five minutes:
+
+```yaml
+alias: Refresh Weasley Clock image
+triggers:
+  - trigger: time_pattern
+    minutes: "/5"
+actions:
+  - action: weasley_clock.snapshot
+    data: {}
+    response_variable: clock_snapshot
+```
+
+The destination device must be able to reach your Home Assistant address. PNG
+support and how the device receives images depend on its integration. The snapshot
+uses local image files; external image URLs can display in the card but cannot be
+rendered by this action. Unavailable people or people without an image are omitted
+and reported. Local template diagnostics remain visible in the interactive card.
+The image keeps the face's aspect ratio and caps its dimensions at 4096 pixels.
+
 ## Updating to 1.2.0
 
 Requires Home Assistant **2026.9 or newer**. Replace the complete
 `/config/custom_components/weasley_clock/` folder (including `translations`,
 `media_source.py`, and `www`), restart Home Assistant, and refresh browser/app pages.
-The integration page should show **version 1.2.0**.
+The integration page should show the version you installed (**1.3.0** for the snapshot release).
 
 There is one entry named **Weasley Clock**. Its configuration edits the 13
 positions; each position is a text sensor showing its name, such as `Home`.
@@ -214,14 +305,14 @@ If your dashboard resources use YAML, include:
 
 ```yaml
 resources:
-  - url: /weasley_clock/weasley-card.js?v=1.2.0
+  - url: /weasley_clock/weasley-card.js?v=1.3.0
     type: module
 ```
 
 If the editor says `Custom element doesn't exist: weasley-clock-card`:
 
-1. Check the installed integration version is **1.2.0**, then restart Home Assistant.
-2. Open `/weasley_clock/weasley-card.js?v=1.2.0` on your Home Assistant address.
+1. Check the installed integration version is **1.3.0**, then restart Home Assistant.
+2. Open `/weasley_clock/weasley-card.js?v=1.3.0` on your Home Assistant address.
    It should return JavaScript. A 404 means the integration or its `www` folder
    was not installed or set up successfully.
 3. In **Settings > Dashboards > Resources** (advanced mode), verify that URL exists
@@ -240,6 +331,7 @@ unexecuted branches and arbitrary strings are not exhaustively validated.
 ### Development checks
 
 ```text
+python -m pip install Pillow==12.3.0
 python -m unittest discover -s tests -v
 node tests/test_card.cjs
 ```

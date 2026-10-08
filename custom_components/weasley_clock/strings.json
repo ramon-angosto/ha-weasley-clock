@@ -18,7 +18,8 @@
           "slot_10_name": "Location 10",
           "slot_11_name": "Location 11",
           "slot_12_name": "Location 12",
-          "slot_13_name": "Location 13"
+          "slot_13_name": "Location 13",
+          "image": "Clock face image (empty: discover in Multimedia)"
         }
       }
     },
@@ -48,7 +49,8 @@
           "slot_10_name": "Location 10",
           "slot_11_name": "Location 11",
           "slot_12_name": "Location 12",
-          "slot_13_name": "Location 13"
+          "slot_13_name": "Location 13",
+          "image": "Clock face image (empty: discover in Multimedia)"
         }
       }
     },
@@ -67,7 +69,11 @@
           "data": {
             "name": "Name",
             "offset": "Offset (degrees)",
-            "template": "Conditions (Jinja template)"
+            "template": "Conditions (Jinja template)",
+            "image": "Hand image (empty: discover by name)",
+            "width": "Width (percentage or px)",
+            "top": "Top offset",
+            "left": "Left offset"
           }
         },
         "reconfigure": {
@@ -76,17 +82,46 @@
           "data": {
             "name": "Name",
             "offset": "Offset (degrees)",
-            "template": "Conditions (Jinja template)"
+            "template": "Conditions (Jinja template)",
+            "image": "Hand image (empty: discover by name)",
+            "width": "Width (percentage or px)",
+            "top": "Top offset",
+            "left": "Left offset"
           }
         }
       },
       "error": {
         "invalid_template": "Invalid Jinja template.",
         "invalid_slots": "All 13 locations must have distinct, nonempty names.",
-        "invalid_name": "Enter a name."
+        "invalid_name": "Enter a name.",
+        "invalid_layout": "Use a percentage or pixels; width must be positive."
       },
       "abort": {
         "reconfigure_successful": "Person updated."
+      }
+    }
+  },
+  "services": {
+    "snapshot": {
+      "name": "Snapshot",
+      "description": "Save a PNG of the clock at its current positions and return its path and URL.",
+      "fields": {
+        "image": {
+          "name": "Clock face image",
+          "description": "Optional media filename or /local/ URL. Defaults to the configured or discovered clock face."
+        },
+        "hands": {
+          "name": "Hands",
+          "description": "Optional list of entity, image, width, top and left. Defaults to the clock people."
+        },
+        "filename": {
+          "name": "PNG filename",
+          "description": "Saved in the Weasley Clock media folder and replaced on each call."
+        },
+        "width": {
+          "name": "Width in pixels",
+          "description": "Optional: preserves the image aspect ratio."
+        }
       }
     }
   }
