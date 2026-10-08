@@ -1,0 +1,73 @@
+name: Publish release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to publish
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPOSITORY: ${{ github.repository }}
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - name: Publish checked-in release notes
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64
+          import json
+          import os
+          import re
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+
+          tag = os.environ['RELEASE_TAG']
+          if not re.fullmatch(r'v\d+\.\d+\.\d+', tag):
+              raise SystemExit('Expected a version tag such as v1.2.0')
+          base = 'https://api.github.com/repos/' + os.environ['GH_REPOSITORY']
+          headers = {
+              'Authorization': 'Bearer ' + os.environ['GH_TOKEN'],
+              'Accept': 'application/vnd.github+json',
+              'X-GitHub-Api-Version': '2022-11-28',
+          }
+
+          def request(path, method='GET', data=None):
+              payload = json.dumps(data).encode() if data is not None else None
+              req = urllib.request.Request(base + path, data=payload, headers=headers, method=method)
+              with urllib.request.urlopen(req) as response:
+                  return json.load(response)
+
+          ref = urllib.parse.quote(tag, safe='')
+          # Reading notes at the tag ensures the release matches its source version.
+          file = request('/contents/docs/releases/' + ref + '.md?ref=' + ref)
+          notes = base64.b64decode(file['content']).decode('utf-8-sig')
+          try:
+              existing = request('/releases/tags/' + ref)
+          except urllib.error.HTTPError as error:
+              if error.code != 404:
+                  raise
+              release = request('/releases', 'POST', {
+                  'tag_name': tag,
+                  'name': 'Weasley Clock ' + tag,
+                  'body': notes,
+                  'draft': False,
+                  'prerelease': False,
+              })
+              print('Published:', release['html_url'])
+          else:
+              # Reruns do not replace an existing release or its edited notes.
+              print('Release already exists:', existing['html_url'])
+          PY

@@ -1,10 +1,61 @@
-# Weasley Clock Custom Component
-![Weasley Clock Banner](docs/Weasley_clock.PNG)
+# Weasley Clock for Home Assistant
 
-A complete solution for a Harry Potter style Location Clock in Home Assistant. It manages the logic, the mathematics, and the frontend display.
+A Harry Potter-inspired family location clock for Home Assistant, with a custom
+integration and Lovelace dashboard card. Use Jinja templates to point each
+person's clock hand at home, work, travelling, or any of your configured locations.
 
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.9%2B-18BCF2)](https://www.home-assistant.io/)
+[![HACS custom repository](https://img.shields.io/badge/HACS-Custom%20repository-41BDF5)](https://www.hacs.xyz/docs/faq/custom_repositories/)
+[![Latest release](https://img.shields.io/github/v/release/ramon-angosto/ha-weasley-clock)](https://github.com/ramon-angosto/ha-weasley-clock/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-## 🎨 Asset Preparation (Graphics)
+![Weasley Clock showing two family members on a custom clock face](docs/weasley_clock.PNG)
+
+## Features
+
+- One Weasley Clock integration entry with configurable person subentries.
+- 13 named clock positions, each exposed as a text sensor.
+- A Jinja template per person using your existing Home Assistant entities.
+- Individual hand offsets to help separate people at the same location.
+- A Lovelace card with custom face and hand images, person states, and diagnostics.
+- Clock graphics accessible in Multimedia, with automatic dashboard resource registration.
+- Automatic migration from older separate person entries while preserving sensor IDs.
+
+## Installation
+
+Requires **Home Assistant 2026.9 or newer**. For HACS installation, HACS must already
+be installed. This project is available as a **custom repository**.
+
+### HACS
+
+1. Open **HACS**, then its menu and **Custom repositories**.
+2. Add `https://github.com/ramon-angosto/ha-weasley-clock` with type **Integration**.
+3. Find **Weasley Clock** in HACS and download the latest release.
+4. Restart Home Assistant.
+5. Open **Settings > Devices & services > Add integration > Weasley Clock**.
+6. Configure the 13 locations, then add people inside the clock entry.
+7. Upload your clock graphics to **Media > My media > weasley_clock** and add the
+   **Weasley Clock** dashboard card using the YAML example below.
+
+See the [HACS custom repository guide](https://www.hacs.xyz/docs/faq/custom_repositories/)
+for the repository menu, and [release notes](https://github.com/ramon-angosto/ha-weasley-clock/releases)
+for changes between versions.
+
+### Manual installation
+
+1. Download the source ZIP from the [latest release](https://github.com/ramon-angosto/ha-weasley-clock/releases/latest).
+2. Copy `custom_components/weasley_clock` into `/config/custom_components/`.
+3. Restart Home Assistant and follow steps 5–7 above.
+
+## Configuration and graphics
+
+[Prepare graphics](#asset-preparation-graphics) ·
+[Configure the clock and people](#setup-guide) ·
+[Template example](#example-logic-template) ·
+[Dashboard card](#dashboard-card-frontend) ·
+[Upgrade guide](#updating-to-120)
+
+## Asset Preparation (Graphics)
 Before configuring the integration, you need to create your custom Clock Face and Hands.
 
 **Clock Face Example:**  
@@ -34,7 +85,7 @@ Before configuring the integration, you need to create your custom Clock Face an
 
 ---
 
-## ⚙️ Setup Guide
+## Setup Guide
 
 ### 1. Initial Configuration (The Clock Face)
 1.  Go to **Settings > Devices & Services > Add Integration**.
@@ -52,7 +103,7 @@ Open **Settings > Devices & services > Weasley Clock** and use **Add person** on
 
 ---
 
-## 📝 Example Logic (Template)
+## Example Logic (Template)
 
 **The Goal:**
 We want to track "Ron Weasley". We want to use native Home Assistant Groups for family zones so we don't have to hardcode them.
@@ -99,7 +150,7 @@ Paste this into the "Template" field during setup.
 {% endif %}
 ```
 
-## 🖥️ Dashboard Card (Frontend)
+## Dashboard Card (Frontend)
 Add a **"Manual"** card to your dashboard and paste this YAML. The weasley-clock-card is automatically installed by the integration.
 
 **Note on Styling:** If your hands are different sizes, use the top, left, and width properties to align them perfectly with the center pivot point.
@@ -195,3 +246,7 @@ node tests/test_card.cjs
 
 The Python checks use lightweight HA API doubles; verify the installed integration
 and browser resource in Home Assistant as well.
+
+## License
+
+Licensed under the [MIT License](LICENSE).
