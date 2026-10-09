@@ -1,5 +1,7 @@
 # Weasley Clock for Home Assistant
 
+![Weasley Clock — a configurable magical location clock for Home Assistant](docs/banner.jpg)
+
 A Harry Potter-inspired family location clock for Home Assistant, with a custom
 integration and Lovelace dashboard card. Use Jinja templates to point each
 person's clock hand at home, work, travelling, or any of your configured locations.
