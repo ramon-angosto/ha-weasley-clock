@@ -270,7 +270,7 @@ The image keeps the face's aspect ratio and caps its dimensions at 4096 pixels.
 Requires Home Assistant **2026.9 or newer**. Replace the complete
 `/config/custom_components/weasley_clock/` folder (including `translations`,
 `media_source.py`, and `www`), restart Home Assistant, and refresh browser/app pages.
-The integration page should show the version you installed (**1.3.0** for the snapshot release).
+The integration page should show the version you installed (**1.3.1** for the snapshot release).
 
 There is one entry named **Weasley Clock**. Its configuration edits the 13
 positions; each position is a text sensor showing its name, such as `Home`.
@@ -307,14 +307,14 @@ If your dashboard resources use YAML, include:
 
 ```yaml
 resources:
-  - url: /weasley_clock/weasley-card.js?v=1.3.0
+  - url: /weasley_clock/weasley-card.js?v=1.3.1
     type: module
 ```
 
 If the editor says `Custom element doesn't exist: weasley-clock-card`:
 
-1. Check the installed integration version is **1.3.0**, then restart Home Assistant.
-2. Open `/weasley_clock/weasley-card.js?v=1.3.0` on your Home Assistant address.
+1. Check the installed integration version is **1.3.1**, then restart Home Assistant.
+2. Open `/weasley_clock/weasley-card.js?v=1.3.1` on your Home Assistant address.
    It should return JavaScript. A 404 means the integration or its `www` folder
    was not installed or set up successfully.
 3. In **Settings > Dashboards > Resources** (advanced mode), verify that URL exists
@@ -333,7 +333,7 @@ unexecuted branches and arbitrary strings are not exhaustively validated.
 ### Development checks
 
 ```text
-python -m pip install Pillow==12.3.0
+python -m pip install "Pillow>=12.3.0"
 python -m unittest discover -s tests -v
 node tests/test_card.cjs
 ```

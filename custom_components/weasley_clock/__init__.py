@@ -21,7 +21,7 @@ from .graphics import async_setup_graphics
 _LOGGER = logging.getLogger(__name__)
 PLATFORMS = [Platform.SENSOR]
 CARD_URL = "/weasley_clock/weasley-card.js"
-CARD_RESOURCE = f"{CARD_URL}?v=1.3.0"
+CARD_RESOURCE = f"{CARD_URL}?v=1.3.1"
 IMAGE_URL = "/weasley_clock/images"
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
 
